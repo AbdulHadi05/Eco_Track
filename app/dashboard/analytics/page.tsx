@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Download, Filter } from "lucide-react"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { AnalyticsCharts } from "@/components/analytics/analytics-charts"
-import { dataService } from "@/lib/data-service"
+import { firebaseDataStore as dataStore } from "@/lib/firebase-data-store"
 import type { FeedbackForm, Analytics } from "@/lib/types"
 
 export default function AnalyticsPage() {
@@ -19,7 +19,7 @@ export default function AnalyticsPage() {
   useEffect(() => {
     const loadForms = async () => {
       try {
-        const formsData = await dataService.getForms()
+        const formsData = await dataStore.getForms()
         setForms(formsData)
         if (formsData.length > 0) {
           setSelectedFormId(formsData[0].id)
@@ -39,7 +39,7 @@ export default function AnalyticsPage() {
       if (!selectedFormId) return
 
       try {
-        const analyticsData = await dataService.getAnalytics(selectedFormId)
+        const analyticsData = await dataStore.getAnalytics(selectedFormId)
         setAnalytics(analyticsData)
       } catch (error) {
         console.error("Failed to load analytics:", error)
