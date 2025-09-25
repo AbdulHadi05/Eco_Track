@@ -8,8 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { authManager } from "@/lib/data-service"
-import { useAuth } from "./auth-provider"
+import { authManager } from "@/lib/auth"
 
 interface SignupFormProps {
   onSuccess: (token: string) => void
@@ -23,7 +22,6 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const { updateAuth } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -42,18 +40,15 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
     setIsLoading(true)
 
     try {
-      console.log('🔐 Attempting signup with:', email, name)
       const session = await authManager.signUp(email, password, name)
       if (session) {
-        console.log('✅ Signup successful:', session.user.email)
-        updateAuth(session.user, session.token)
+        localStorage.setItem("auth_token", session.token)
         onSuccess(session.token)
       } else {
-        setError("Failed to create account")
+        setError("Email already exists")
       }
-    } catch (err: any) {
-      console.error('❌ Signup error:', err)
-      setError(err.message || "An error occurred. Please try again.")
+    } catch (err) {
+      setError("An error occurred. Please try again.")
     } finally {
       setIsLoading(false)
     }
