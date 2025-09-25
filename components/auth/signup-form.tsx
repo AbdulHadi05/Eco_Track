@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { authManager } from "@/lib/auth"
+import { firebaseAuthManager } from "@/lib/firebase-auth"
 
 interface SignupFormProps {
   onSuccess: (token: string) => void
@@ -40,7 +40,7 @@ export function SignupForm({ onSuccess, onSwitchToLogin }: SignupFormProps) {
     setIsLoading(true)
 
     try {
-      const session = await authManager.signUp(email, password, name)
+      const session = await firebaseAuthManager.signUp(email, password, name)
       if (session) {
         localStorage.setItem("auth_token", session.token)
         onSuccess(session.token)

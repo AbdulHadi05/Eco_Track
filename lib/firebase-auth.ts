@@ -6,7 +6,7 @@ import {
   onAuthStateChanged,
   User as FirebaseUser,
 } from 'firebase/auth'
-import { doc, setDoc, getDoc } from 'firebase/firestore'
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore'
 import { auth, db } from './firebase'
 import type { User } from './types'
 import type { AuthSession } from './auth'
@@ -44,21 +44,28 @@ class FirebaseAuthManager {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password)
       const firebaseUser = userCredential.user
       
-      // Create user profile in Firestore
-      const userData: User = {
+      // Create user profile in Firestore with serverTimestamp
+      const userData = {
         id: firebaseUser.uid,
         email: firebaseUser.email!,
         name,
         role: 'user',
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
       }
       
       await setDoc(doc(db, 'users', firebaseUser.uid), userData)
       
       return {
         token: await firebaseUser.getIdToken(),
-        user: userData,
+        user: {
+          id: firebaseUser.uid,
+          email: firebaseUser.email!,
+          name,
+          role: 'user' as const,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
         expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
       }
     } catch (error: any) {

@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { authManager } from "@/lib/data-service"
 import { useAuth } from "./auth-provider"
+import { firebaseAuthManager } from "@/lib/firebase-auth"
 
 interface LoginFormProps {
   onSuccess: (token: string) => void
@@ -21,7 +21,6 @@ export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const { updateAuth } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -29,18 +28,15 @@ export function LoginForm({ onSuccess, onSwitchToSignup }: LoginFormProps) {
     setIsLoading(true)
 
     try {
-      console.log('🔐 Attempting login with:', email)
-      const session = await authManager.signIn(email, password)
+      const session = await firebaseAuthManager.signIn(email, password)
       if (session) {
-        console.log('✅ Login successful:', session.user.email)
-        updateAuth(session.user, session.token)
+        localStorage.setItem("auth_token", session.token)
         onSuccess(session.token)
       } else {
         setError("Invalid email or password")
       }
-    } catch (err: any) {
-      console.error('❌ Login error:', err)
-      setError(err.message || "An error occurred. Please try again.")
+    } catch (err) {
+      setError("An error occurred. Please try again.")
     } finally {
       setIsLoading(false)
     }
